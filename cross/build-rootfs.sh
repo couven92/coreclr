@@ -70,6 +70,9 @@ for i in "$@" ; do
         lldb3.8)
             __LLDB_Package="lldb-3.8-dev"
             ;;
+		lldb3.7)
+			__LLDB_Package="lldb-3.7-dev"
+			;;
         lldb3.9)
             __LLDB_Package="lldb-3.9-dev"
             ;;
@@ -103,6 +106,10 @@ for i in "$@" ; do
             __LinuxCodeName=jessie
             __UbuntuRepo="http://ftp.debian.org/debian/"
             ;;
+		raspbian)
+			__UbuntuRepo="http://archive.raspbian.org/raspbian/"
+			__SourcesCodeName=raspbian
+			;;
         tizen)
             if [ "$__BuildArch" != "armel" ]; then
                 echo "Tizen is available only for armel."
@@ -140,9 +147,15 @@ if [ -d "$__RootfsDir" ]; then
     rm -rf $__RootfsDir
 fi
 
+if [[ -z $__SourcesCodeName ]]; then
+	__SourcesCodeName=$__LinuxCodeName
+elif [[ -n $__LinuxCodeName ]]; then
+	__SourcesCodeName+=".$__LinuxCodeName"
+fi
+
 if [[ -n $__LinuxCodeName ]]; then
     qemu-debootstrap --arch $__UbuntuArch $__LinuxCodeName $__RootfsDir $__UbuntuRepo
-    cp $__CrossDir/$__BuildArch/sources.list.$__LinuxCodeName $__RootfsDir/etc/apt/sources.list
+    cp $__CrossDir/$__BuildArch/sources.list.$__SourcesCodeName $__RootfsDir/etc/apt/sources.list
     chroot $__RootfsDir apt-get update
     chroot $__RootfsDir apt-get -f -y install
     chroot $__RootfsDir apt-get -y install $__UbuntuPackages
